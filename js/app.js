@@ -96,16 +96,11 @@
   // Service Worker Registration
   // ============================================
   
-  async function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-      try {
-        const reg = await navigator.serviceWorker.register('/sw.js');
-        console.log('SW registered:', reg.scope);
-      } catch (err) {
-        console.warn('SW registration failed:', err);
-      }
-    }
-  }
+async function registerServiceWorker() {
+  // موقتاً غیرفعال شده
+  console.log('Service Worker disabled for testing');
+  return;
+}
   
   // ============================================
   // Header Button Handlers
