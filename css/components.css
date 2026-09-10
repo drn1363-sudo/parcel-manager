@@ -546,3 +546,244 @@
   color: var(--color-primary);
   font-weight: 500;
 }
+/* ============================================
+   Autocomplete
+   ============================================ */
+
+.autocomplete-wrapper {
+  position: relative;
+}
+
+.autocomplete-suggestions {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  margin-top: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 50;
+  box-shadow: var(--shadow-md);
+}
+
+.suggestion-item {
+  padding: 12px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-border);
+  transition: background var(--transition-fast);
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:active,
+.suggestion-item:hover {
+  background: var(--color-bg-subtle);
+}
+
+.suggestion-name {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.suggestion-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.suggestion-empty {
+  color: var(--color-text-muted);
+  text-align: center;
+  cursor: default;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  padding: 8px 0;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-link:active {
+  opacity: 0.7;
+}
+
+/* ============================================
+   Scan Page
+   ============================================ */
+
+.scan-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.scan-guide {
+  text-align: center;
+  padding: var(--space-md) 0;
+}
+
+.scan-guide-icon {
+  font-size: 48px;
+  margin-bottom: var(--space-sm);
+}
+
+.scan-guide-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+}
+
+.scan-guide-text {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.camera-container {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: #000;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+}
+
+.camera-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+  padding: var(--space-md);
+}
+
+.camera-placeholder-icon {
+  font-size: 48px;
+  margin-bottom: var(--space-sm);
+  opacity: 0.7;
+}
+
+.camera-placeholder-text {
+  font-size: var(--font-size-sm);
+  opacity: 0.8;
+}
+
+.camera-error {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+  padding: var(--space-md);
+  gap: var(--space-md);
+}
+
+.camera-error-icon {
+  font-size: 48px;
+}
+
+.camera-error-text {
+  font-size: var(--font-size-sm);
+  max-width: 280px;
+}
+
+.scan-manual {
+  margin-top: var(--space-sm);
+}
+
+.divider-text {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin: var(--space-md) 0;
+  position: relative;
+}
+
+.divider-text::before,
+.divider-text::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.divider-text::before { right: 0; }
+.divider-text::after { left: 0; }
+
+/* ============================================
+   Alert Box
+   ============================================ */
+
+.alert {
+  display: flex;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-md);
+}
+
+.alert-warning {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.alert-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.alert-text {
+  flex: 1;
+  font-size: var(--font-size-sm);
+}
+
+.alert-text strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.alert-text p {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ============================================
+   Form Actions
+   ============================================ */
+
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+/* ============================================
+   Duplicate Info
+   ============================================ */
+
+.duplicate-info .info-box {
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-size: var(--font-size-sm);
+}
