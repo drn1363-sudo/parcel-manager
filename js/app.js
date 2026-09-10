@@ -26,10 +26,10 @@
   // ============================================
   
   function registerRoutes() {
-    // Dashboard
-    Router.register('/dashboard', {
-      title: 'مدیریت مرسولات',
-      view: placeholderView('داشبورد', '🏠')
+  // Dashboard
+  Router.register('/dashboard', {
+    title: 'مدیریت مرسولات',
+    view: Views.Dashboard.render  
     });
     
     // Shipments list
