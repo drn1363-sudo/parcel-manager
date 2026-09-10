@@ -41,7 +41,18 @@
     // Scan
     Router.register('/scan', {
       title: 'اسکن بارکد',
-      view: placeholderView('اسکن بارکد', '📷')
+      view: Views.Scan.render
+    });
+    // Shipment Form (New)
+  Router.register('/shipment-new', {
+    title: 'ثبت مرسوله جدید',
+    view: Views.ShipmentForm.render
+    });
+
+  // Shipment Form (Edit)
+  Router.register('/shipment-edit', {
+    title: 'ویرایش مرسوله',
+    view: Views.ShipmentForm.render
     });
     
     // Suppliers
