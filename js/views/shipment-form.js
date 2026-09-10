@@ -376,23 +376,23 @@ Views.ShipmentForm = (function() {
     const supplierId = document.getElementById('f-supplier-id').value;
     const status = document.getElementById('f-status').value;
     const receivedAtInput = document.getElementById('f-received-at').value;
-    const sentAtInput = document.getElementById('f-sent-at').value;
-    
-    const shipmentData = {
-      barcode: barcode,
-      supplierId: supplierId || null,
-      senderName: document.getElementById('f-sender').value.trim(),
-      status: status,
-      receivedAt: receivedAtInput ? new Date(receivedAtInput).toISOString() : null,
-      sentAt: sentAtInput ? new Date(sentAtInput).toISOString() : null,
-      carrier: document.getElementById('f-carrier').value.trim(),
-      contents: document.getElementById('f-contents').value.trim(),
-      itemCount: parseInt(document.getElementById('f-item-count').value) || null,
-      notes: document.getElementById('f-notes').value.trim(),
-      photoIds: [],
-      relatedOrderId: null,
-      updatedAt: Utils.nowISO()
-    };
+    const sentAtInput = document.getElementById('f-sent-at').const shipmentData = {
+  barcode: barcode,
+  supplierId: supplierId || '',
+  senderName: document.getElementById('f-sender').value.trim() || '',
+  status: status,
+  receivedAt: receivedAtInput ? new Date(receivedAtInput).toISOString() : new Date().toISOString(),
+  sentAt: sentAtInput ? new Date(sentAtInput).toISOString() : '',
+  carrier: document.getElementById('f-carrier').value.trim() || '',
+  contents: document.getElementById('f-contents').value.trim() || '',
+  itemCount: parseInt(document.getElementById('f-item-count').value) || 0,
+  notes: document.getElementById('f-notes').value.trim() || '',
+  photoIds: [],
+  relatedOrderId: '',
+  updatedAt: Utils.nowISO()
+};
+
+
     
     try {
       if (isEditMode) {
