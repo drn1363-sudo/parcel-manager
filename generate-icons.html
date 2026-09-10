@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>ساخت آیکون‌ها</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      text-align: center;
+    }
+    canvas {
+      border: 1px solid #ccc;
+      margin: 20px;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 10px;
+    }
+    button:hover {
+      background: #0284c7;
+    }
+    .info {
+      background: #f0f9ff;
+      padding: 16px;
+      border-radius: 8px;
+      margin: 20px 0;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 ساخت آیکون‌های برنامه</h1>
+  
+  <div class="info">
+    <p><strong>دستورالعمل:</strong></p>
+    <ol>
+      <li>روی دکمه «ساخت و دانلود آیکون ۱۹۲» کلیک کنید</li>
+      <li>فایل دانلود شده را به پوشه <code>icons/</code> منتقل کنید و نام آن را به <code>icon-192.png</code> تغییر دهید</li>
+      <li>روی دکمه «ساخت و دانلود آیکون ۵۱۲» کلیک کنید</li>
+      <li>فایل دانلود شده را به پوشه <code>icons/</code> منتقل کنید و نام آن را به <code>icon-512.png</code> تغییر دهید</li>
+      <li>صفحه را رفرش کنید</li>
+    </ol>
+  </div>
+  
+  <div>
+    <button onclick="generateIcon(192)">📥 ساخت و دانلود آیکون ۱۹۲</button>
+    <button onclick="generateIcon(512)">📥 ساخت و دانلود آیکون ۵۱۲</button>
+  </div>
+  
+  <div id="preview"></div>
+  
+  <script>
+    function generateIcon(size) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      
+      // Background
+      ctx.fillStyle = '#0ea5e9';
+      ctx.fillRect(0, 0, size, size);
+      
+      // Rounded corners (optional, but looks better)
+      const radius = size * 0.2;
+      ctx.beginPath();
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(size - radius, 0);
+      ctx.quadraticCurveTo(size, 0, size, radius);
+      ctx.lineTo(size, size - radius);
+      ctx.quadraticCurveTo(size, size, size - radius, size);
+      ctx.lineTo(radius, size);
+      ctx.quadraticCurveTo(0, size, 0, size - radius);
+      ctx.lineTo(0, radius);
+      ctx.quadraticCurveTo(0, 0, radius, 0);
+      ctx.closePath();
+      ctx.clip();
+      
+      // Fill background again after clip
+      ctx.fillStyle = '#0ea5e9';
+      ctx.fillRect(0, 0, size, size);
+      
+      // Draw package icon (simplified box)
+      const centerX = size / 2;
+      const centerY = size / 2;
+      const boxSize = size * 0.5;
+      
+      // Box body
+      ctx.fillStyle = 'white';
+      ctx.fillRect(centerX - boxSize/2, centerY - boxSize/2, boxSize, boxSize);
+      
+      // Box flaps (top)
+      ctx.beginPath();
+      ctx.moveTo(centerX - boxSize/2, centerY - boxSize/2);
+      ctx.lineTo(centerX - boxSize/4, centerY - boxSize/2 - boxSize/4);
+      ctx.lineTo(centerX + boxSize/4, centerY - boxSize/2 - boxSize/4);
+      ctx.lineTo(centerX + boxSize/2, centerY - boxSize/2);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Box tape (vertical line)
+      ctx.strokeStyle = '#0ea5e9';
+      ctx.lineWidth = size * 0.03;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY - boxSize/2 - boxSize/4);
+      ctx.lineTo(centerX, centerY + boxSize/2);
+      ctx.stroke();
+      
+      // Box tape (horizontal line)
+      ctx.beginPath();
+      ctx.moveTo(centerX - boxSize/2, centerY);
+      ctx.lineTo(centerX + boxSize/2, centerY);
+      ctx.stroke();
+      
+      // Download
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `icon-${size}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+      
+      // Preview
+      const preview = document.getElementById('preview');
+      preview.innerHTML = '';
+      preview.appendChild(canvas);
+    }
+  </script>
+</body>
+</html>
