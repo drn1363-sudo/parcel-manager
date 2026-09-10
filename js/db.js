@@ -290,6 +290,7 @@ window.DB = (function() {
     clearAll,
     exportAll,
     importAll
+    getNextDisplayIndex,
   };
   
 })();
