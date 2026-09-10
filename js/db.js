@@ -100,9 +100,6 @@ window.DB = (function() {
     });
   }
   
-  /**
-   * Get all items from a store
-   */
   function getAll(storeName) {
     return init().then(() => {
       const store = transaction(storeName);
@@ -110,9 +107,6 @@ window.DB = (function() {
     });
   }
   
-  /**
-   * Get a single item by ID
-   */
   function get(storeName, id) {
     return init().then(() => {
       const store = transaction(storeName);
@@ -120,9 +114,6 @@ window.DB = (function() {
     });
   }
   
-  /**
-   * Add a new item
-   */
   function add(storeName, item) {
     return init().then(() => {
       const store = transaction(storeName, 'readwrite');
@@ -130,9 +121,6 @@ window.DB = (function() {
     });
   }
   
-  /**
-   * Update an existing item (put)
-   */
   function put(storeName, item) {
     return init().then(() => {
       const store = transaction(storeName, 'readwrite');
@@ -140,9 +128,6 @@ window.DB = (function() {
     });
   }
   
-  /**
-   * Delete an item by ID
-   */
   function remove(storeName, id) {
     return init().then(() => {
       const store = transaction(storeName, 'readwrite');
@@ -150,9 +135,6 @@ window.DB = (function() {
     });
   }
   
-  /**
-   * Clear all items from a store
-   */
   function clear(storeName) {
     return init().then(() => {
       const store = transaction(storeName, 'readwrite');
@@ -160,9 +142,6 @@ window.DB = (function() {
     });
   }
   
-  /**
-   * Count items in a store
-   */
   function count(storeName) {
     return init().then(() => {
       const store = transaction(storeName);
@@ -170,9 +149,6 @@ window.DB = (function() {
     });
   }
   
-  /**
-   * Get item by index value
-   */
   function getByIndex(storeName, indexName, value) {
     return init().then(() => {
       const store = transaction(storeName);
@@ -181,9 +157,6 @@ window.DB = (function() {
     });
   }
   
-  /**
-   * Get all items by index value
-   */
   function getAllByIndex(storeName, indexName, value) {
     return init().then(() => {
       const store = transaction(storeName);
@@ -207,12 +180,19 @@ window.DB = (function() {
   }
   
   // ============================================
+  // Display Index Helpers (NEW)
+  // ============================================
+  
+  async function getNextDisplayIndex() {
+    let nextIndex = await getSetting('nextDisplayIndex', 1);
+    await setSetting('nextDisplayIndex', nextIndex + 1);
+    return nextIndex;
+  }
+  
+  // ============================================
   // Bulk Operations
   // ============================================
   
-  /**
-   * Clear all data from all stores (for reset)
-   */
   function clearAll() {
     return init().then(() => {
       const tx = db.transaction(Object.values(STORES), 'readwrite');
@@ -223,9 +203,6 @@ window.DB = (function() {
     });
   }
   
-  /**
-   * Export all data as JSON object
-   */
   function exportAll() {
     return init().then(() => {
       const promises = Object.values(STORES).map(storeName => {
@@ -246,9 +223,6 @@ window.DB = (function() {
     });
   }
   
-  /**
-   * Import data from JSON object
-   */
   function importAll(backupData) {
     if (!backupData || !backupData.data) {
       return Promise.reject(new Error('Invalid backup data'));
@@ -287,10 +261,10 @@ window.DB = (function() {
     getAllByIndex,
     getSetting,
     setSetting,
+    getNextDisplayIndex,
     clearAll,
     exportAll,
     importAll
-    getNextDisplayIndex,
   };
   
 })();
