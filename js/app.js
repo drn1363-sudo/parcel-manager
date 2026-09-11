@@ -6,7 +6,7 @@
   'use strict';
   
   // ============================================
-  // Placeholder Views (will be implemented in Phase 2+)
+  // Placeholder Views
   // ============================================
   
   function placeholderView(title, icon) {
@@ -26,33 +26,22 @@
   // ============================================
   
   function registerRoutes() {
-  // Dashboard
-  Router.register('/dashboard', {
-    title: 'مدیریت مرسولات',
-    view: Views.Dashboard.render  
+    // Dashboard
+    Router.register('/dashboard', {
+      title: 'مدیریت مرسولات',
+      view: Views.Dashboard.render
     });
     
     // Shipments list
     Router.register('/shipments', {
       title: 'مرسولات',
-      view: placeholderView('لیست مرسولات', '📦')
+      view: Views.ShipmentsList.render
     });
     
     // Scan
     Router.register('/scan', {
       title: 'اسکن بارکد',
       view: Views.Scan.render
-    });
-    // Shipment Form (New)
-  Router.register('/shipment-new', {
-    title: 'ثبت مرسوله جدید',
-    view: Views.ShipmentForm.render
-    });
-
-  // Shipment Form (Edit)
-  Router.register('/shipment-edit', {
-    title: 'ویرایش مرسوله',
-    view: Views.ShipmentForm.render
     });
     
     // Suppliers
@@ -72,6 +61,24 @@
       title: 'گزارش‌ها',
       view: placeholderView('گزارش‌ها', '📊')
     });
+    
+    // Shipment Form (New)
+    Router.register('/shipment-new', {
+      title: 'ثبت مرسوله جدید',
+      view: Views.ShipmentForm.render
+    });
+    
+    // Shipment Form (Edit)
+    Router.register('/shipment-edit', {
+      title: 'ویرایش مرسوله',
+      view: Views.ShipmentForm.render
+    });
+    
+    // Shipment Detail
+    Router.register('/shipment-detail', {
+      title: 'جزئیات مرسوله',
+      view: Views.ShipmentDetail.render
+    });
   }
   
   // ============================================
@@ -83,7 +90,6 @@
     document.documentElement.setAttribute('data-theme', theme);
     State.set('theme', theme);
     
-    // Update theme color meta
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) {
       const isDark = theme === 'dark' || 
@@ -96,11 +102,11 @@
   // Service Worker Registration
   // ============================================
   
-async function registerServiceWorker() {
-  // موقتاً غیرفعال شده
-  console.log('Service Worker disabled for testing');
-  return;
-}
+  async function registerServiceWorker() {
+    // موقتاً غیرفعال شده
+    console.log('Service Worker disabled for testing');
+    return;
+  }
   
   // ============================================
   // Header Button Handlers
@@ -180,9 +186,10 @@ async function registerServiceWorker() {
       
     } catch (err) {
       console.error('❌ Initialization failed:', err);
+      alert('خطا: ' + err.message + '\n\nStack: ' + err.stack);
       const loadingText = document.querySelector('.loading-text');
       if (loadingText) {
-        loadingText.textContent = 'خطا در بارگذاری برنامه';
+        loadingText.textContent = 'خطا: ' + err.message;
         loadingText.style.color = 'var(--color-danger)';
       }
     }
