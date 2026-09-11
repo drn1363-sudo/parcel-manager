@@ -59,7 +59,7 @@
     
     Router.register('/reports', {
       title: 'گزارش‌ها',
-      view: placeholderView('گزارش‌ها', '📊')
+      view: Views.Reports.render
     });
     
     Router.register('/shipment-new', {
@@ -92,6 +92,7 @@
   }
   
   async function registerServiceWorker() {
+    // فعلاً غیرفعال - بعد از پایدار شدن نسخه فعال می‌شود
     console.log('Service Worker disabled for testing');
     return;
   }
@@ -111,7 +112,7 @@
     const menuBtn = document.getElementById('btn-menu');
     if (menuBtn) {
       menuBtn.addEventListener('click', () => {
-        Components.toast('منو به‌زودی اضافه می‌شود', 'info');
+        Router.navigate('/settings');
       });
     }
   }
