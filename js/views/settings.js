@@ -302,89 +302,107 @@ Views.Settings = (function() {
   // ============================================
   
   async function clearAllData() {
-    const shipments = State.get('shipments');
-    const suppliers = State.get('suppliers');
-    
-    if (shipments.length === 0 && suppliers.length === 0) {
-      Components.toastWarning('هیچ اطلاعاتی برای پاک کردن وجود ندارد');
-      return;
-    }
-    
-    // First confirmation
-    const confirmed1 = await Components.confirm({
-      title: '🗑️ پاک کردن تمام اطلاعات',
-      message: `شما ${shipments.length} مرسوله و ${suppliers.length} فروشگاه دارید.\n\nتمام اطلاعات برای همیشه پاک خواهد شد!\n\nآیا واقعاً مطمئن هستید؟`,
-      confirmText: 'بله، مطمئنم',
-      cancelText: 'انصراف',
-      danger: true
-    });
-    
-    if (!confirmed1) return;
-    
-    // Second confirmation (type word)
-    const content = document.createElement('div');
-    content.innerHTML = `
-      <p style="margin-bottom: 12px; line-height: 1.6;">
-        برای تأیید نهایی، عبارت <strong>پاک کن</strong> را در کادر زیر تایپ کنید:
-      </p>
-      <input type="text" id="confirm-clear-input" class="form-input" 
-             placeholder="پاک کن" autocomplete="off">
-    `;
-    
-    const footer = document.createElement('div');
-    footer.style.cssText = 'display: flex; gap: 8px; justify-content: flex-end; width: 100%;';
-    
-    const cancelBtn = document.createElement('button');
-    cancelBtn.className = 'btn btn-secondary';
-    cancelBtn.textContent = 'انصراف';
-    
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'btn btn-danger';
-    deleteBtn.textContent = 'حذف همه';
-    deleteBtn.disabled = true;
-    
-    footer.appendChild(cancelBtn);
-    footer.appendChild(deleteBtn);
-    
-    const modal = Components.modal({
-      title: '⚠️ تأیید نهایی حذف',
-      content: content,
-      footer: footer
-    });
-    
-    const input = document.getElementById('confirm-clear-input');
-    input.addEventListener('input', () => {
-      deleteBtn.disabled = input.value.trim() !== 'پاک کن';
-    });
-    
-    cancelBtn.addEventListener('click', () => modal.close());
-    
-    deleteBtn.addEventListener('click', async () => {
-      try {
-        modal.close();
-        
-        await DB.clearAll();
-        await DB.setSetting('nextDisplayIndex', 1);
-        await DB.setSetting('theme', State.get('theme') || 'light');
-        
-        await State.loadShipments();
-        await State.loadSuppliers();
-        await State.loadSettings();
-        
-        Components.toastSuccess('تمام اطلاعات پاک شد');
-        
-        // Re-render settings
+  const shipments = State.get('shipments');
+  const suppliers = State.get('suppliers');
+  
+  if (shipments.length === 0 && suppliers.length === 0) {
+    Components.toastWarning('هیچ اطلاعاتی برای پاک کردن وجود ندارد');
+    return;
+  }
+  
+  const confirmed1 = await Components.confirm({
+    title: '🗑️ پاک کردن تمام اطلاعات',
+    message: `شما ${shipments.length} مرسوله و ${suppliers.length} فروشگاه دارید.\n\nتمام اطلاعات برای همیشه پاک خواهد شد!\n\nآیا واقعاً مطمئن هستید؟`,
+    confirmText: 'بله، مطمئنم',
+    cancelText: 'انصراف',
+    danger: true
+  });
+  
+  if (!confirmed1) return;
+  
+  const content = document.createElement('div');
+  content.innerHTML = `
+    <p style="margin-bottom: 12px; line-height: 1.6;">
+      برای تأیید نهایی، عبارت <strong>پاک کن</strong> را در کادر زیر تایپ کنید:
+    </p>
+    <input type="text" id="confirm-clear-input" class="form-input" 
+           placeholder="پاک کن" autocomplete="off">
+  `;
+  
+  const footer = document.createElement('div');
+  footer.style.cssText = 'display: flex; gap: 8px; justify-content: flex-end; width: 100%;';
+  
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'btn btn-secondary';
+  cancelBtn.textContent = 'انصراف';
+  
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'btn btn-danger';
+  deleteBtn.textContent = 'حذف همه';
+  deleteBtn.disabled = true;
+  
+  footer.appendChild(cancelBtn);
+  footer.appendChild(deleteBtn);
+  
+  const modal = Components.modal({
+    title: '⚠️ تأیید نهایی حذف',
+    content: content,
+    footer: footer
+  });
+  
+  const input = document.getElementById('confirm-clear-input');
+  input.addEventListener('input', () => {
+    deleteBtn.disabled = input.value.trim() !== 'پاک کن';
+  });
+  
+  cancelBtn.addEventListener('click', () => modal.close());
+  
+  deleteBtn.addEventListener('click', async () => {
+    try {
+      console.log('Clearing all data...');
+      
+      // Clear all stores one by one
+      await DB.clear(DB.STORES.SHIPMENTS);
+      console.log('✅ Shipments cleared');
+      
+      await DB.clear(DB.STORES.SUPPLIERS);
+      console.log('✅ Suppliers cleared');
+      
+      await DB.clear(DB.STORES.STATUS_HISTORY);
+      console.log('✅ Status history cleared');
+      
+      await DB.clear(DB.STORES.PHOTOS);
+      console.log('✅ Photos cleared');
+      
+      // Keep settings but reset nextDisplayIndex
+      await DB.setSetting('nextDisplayIndex', 1);
+      console.log('✅ Settings reset');
+      
+      // Reload state
+      await State.loadShipments();
+      await State.loadSuppliers();
+      await State.loadSettings();
+      console.log('✅ State reloaded');
+      
+      modal.close();
+      Components.toastSuccess('تمام اطلاعات پاک شد');
+      
+      // Re-render settings
+      setTimeout(() => {
         const viewRoot = document.getElementById('view-root');
         Views.Settings.render(viewRoot);
-        
-      } catch (err) {
-        console.error('Clear error:', err);
-        Components.toastError('خطا در پاک کردن اطلاعات');
-      }
-    });
-    
-    setTimeout(() => input.focus(), 100);
-  }
+      }, 500);
+      
+    } catch (err) {
+      console.error('❌ Clear error:', err);
+      console.error('Error name:', err.name);
+      console.error('Error message:', err.message);
+      Components.toastError('خطا در پاک کردن: ' + err.message);
+    }
+  });
+  
+  setTimeout(() => input.focus(), 100);
+}
   
   // ============================================
   // Helpers
