@@ -1,6 +1,5 @@
 /**
  * Scanner Module
- * بارکد اسکنر با استفاده از BarcodeDetector API
  */
 window.Scanner = (function() {
   'use strict';
@@ -12,10 +11,6 @@ window.Scanner = (function() {
   let isScanning = false;
   let onScanSuccess = null;
   
-  // ============================================
-  // Check Browser Support
-  // ============================================
-  
   function isSupported() {
     return 'BarcodeDetector' in window;
   }
@@ -23,15 +18,14 @@ window.Scanner = (function() {
   async function getSupportedFormats() {
     if (!isSupported()) return [];
     try {
-      return await BarcodeDetector.getSupportedFormats();
+      const formats = await BarcodeDetector.getSupportedFormats();
+      console.log('Supported barcode formats:', formats);
+      return formats;
     } catch (e) {
+      console.error('Error getting supported formats:', e);
       return [];
     }
   }
-  
-  // ============================================
-  // Initialize Detector
-  // ============================================
   
   async function initDetector() {
     if (!isSupported()) {
@@ -39,22 +33,19 @@ window.Scanner = (function() {
     }
     
     const formats = await getSupportedFormats();
-    // Use all supported formats for best compatibility
     detector = new BarcodeDetector({ 
       formats: formats.length > 0 ? formats : undefined 
     });
+    console.log('✅ BarcodeDetector initialized');
   }
-  
-  // ============================================
-  // Start Camera
-  // ============================================
   
   async function startCamera(container) {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       throw new Error('دوربین در این مرورگر پشتیبانی نمی‌شود');
     }
     
-    // Create video element
+    console.log('Starting camera...');
+    
     videoElement = document.createElement('video');
     videoElement.setAttribute('autoplay', '');
     videoElement.setAttribute('playsinline', '');
@@ -68,8 +59,9 @@ window.Scanner = (function() {
     container.innerHTML = '';
     container.appendChild(videoElement);
     
-    // Request camera (back camera preferred)
     try {
+      console.log('Requesting camera permission...');
+      
       stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: { ideal: 'environment' },
@@ -78,18 +70,45 @@ window.Scanner = (function() {
         },
         audio: false
       });
+      
+      console.log('✅ Camera stream received');
+      
       videoElement.srcObject = stream;
+      
+      await new Promise((resolve, reject) => {
+        videoElement.onloadedmetadata = () => {
+          console.log('✅ Video metadata loaded');
+          resolve();
+        };
+        videoElement.onerror = (e) => {
+          console.error('❌ Video error:', e);
+          reject(new Error('خطا در راه‌اندازی دوربین'));
+        };
+        setTimeout(() => reject(new Error('Timeout loading video')), 10000);
+      });
+      
       await videoElement.play();
+      console.log('✅ Video playing');
+      
     } catch (err) {
-      throw new Error('دسترسی به دوربین رد شد. لطفاً مجوز دوربین را بدهید.');
+      console.error('❌ Camera error:', err);
+      console.error('Error name:', err.name);
+      console.error('Error message:', err.message);
+      
+      if (err.name === 'NotAllowedError') {
+        throw new Error('دسترسی به دوربین رد شد. لطفاً در Settings → Safari → Camera مجوز بدهید.');
+      } else if (err.name === 'NotFoundError') {
+        throw new Error('دوربین یافت نشد');
+      } else if (err.name === 'NotReadableError') {
+        throw new Error('دوربین در حال استفاده توسط برنامه دیگری است');
+      } else {
+        throw new Error('خطا در دسترسی به دوربین: ' + err.message);
+      }
     }
   }
   
-  // ============================================
-  // Stop Camera
-  // ============================================
-  
   function stopCamera() {
+    console.log('Stopping camera...');
     isScanning = false;
     
     if (scanInterval) {
@@ -98,7 +117,10 @@ window.Scanner = (function() {
     }
     
     if (stream) {
-      stream.getTracks().forEach(track => track.stop());
+      stream.getTracks().forEach(track => {
+        track.stop();
+        console.log('Track stopped');
+      });
       stream = null;
     }
     
@@ -108,16 +130,12 @@ window.Scanner = (function() {
     }
     
     detector = null;
+    console.log('✅ Camera stopped');
   }
-  
-  // ============================================
-  // Scan Loop
-  // ============================================
   
   async function scanFrame() {
     if (!isScanning || !videoElement || !detector) return;
     
-    // Check if video is ready
     if (videoElement.readyState !== videoElement.HAVE_ENOUGH_DATA) {
       return;
     }
@@ -130,11 +148,11 @@ window.Scanner = (function() {
         const rawValue = barcode.rawValue;
         
         if (rawValue) {
-          // Success!
+          console.log('✅ Barcode detected:', rawValue);
+          
           Utils.vibrate(100);
           Utils.playBeep();
           
-          // Stop scanning temporarily to prevent multiple scans
           isScanning = false;
           
           if (onScanSuccess) {
@@ -143,31 +161,27 @@ window.Scanner = (function() {
         }
       }
     } catch (err) {
-      // Silently ignore scan errors (frame might be blurry etc.)
+      // Silently ignore
     }
   }
   
-  // ============================================
-  // Start Scanning
-  // ============================================
-  
   async function startScan(container, onSuccess) {
+    console.log('Starting scan...');
     onScanSuccess = onSuccess;
     
-    // Initialize detector
-    await initDetector();
-    
-    // Start camera
-    await startCamera(container);
-    
-    // Start scan loop (every 200ms)
-    isScanning = true;
-    scanInterval = setInterval(scanFrame, 200);
+    try {
+      await initDetector();
+      await startCamera(container);
+      
+      isScanning = true;
+      scanInterval = setInterval(scanFrame, 200);
+      console.log('✅ Scanning started');
+      
+    } catch (err) {
+      console.error('❌ Start scan error:', err);
+      throw err;
+    }
   }
-  
-  // ============================================
-  // Public API
-  // ============================================
   
   return {
     isSupported,
