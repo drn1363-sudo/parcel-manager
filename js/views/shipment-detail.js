@@ -216,34 +216,46 @@ Views.ShipmentDetail = (function() {
     });
   }
   
-  async function showDeleteConfirm(shipment) {
-    const confirmed = await Components.confirm({
-      title: '🗑️ حذف مرسوله',
-      message: `آیا مطمئن هستید که می‌خواهید مرسوله ردیف ${shipment.displayIndex} با بارکد "${shipment.barcode}" را حذف کنید؟\n\nاین عمل قابل بازگشت نیست.`,
-      confirmText: 'حذف',
-      cancelText: 'انصراف',
-      danger: true
-    });
+async function showDeleteConfirm(shipment) {
+  const confirmed = await Components.confirm({
+    title: '🗑️ حذف مرسوله',
+    message: `آیا مطمئن هستید که می‌خواهید مرسوله ردیف ${shipment.displayIndex} با بارکد "${shipment.barcode}" را حذف کنید؟\n\nاین عمل قابل بازگشت نیست.`,
+    confirmText: 'حذف',
+    cancelText: 'انصراف',
+    danger: true
+  });
+  
+  if (!confirmed) return;
+  
+  try {
+    console.log('Deleting shipment:', shipment.id);
     
-    if (!confirmed) return;
+    // Remove from database
+    await DB.remove(DB.STORES.SHIPMENTS, shipment.id);
+    console.log('✅ Removed from DB');
     
-    try {
-      await DB.remove(DB.STORES.SHIPMENTS, shipment.id);
-      await State.loadShipments();
-      
-      Components.toastSuccess('مرسوله حذف شد');
-      
+    // Reload state
+    await State.loadShipments();
+    console.log('✅ State reloaded');
+    
+    Components.toastSuccess('مرسوله حذف شد');
+    
+    // Navigate back
+    setTimeout(() => {
       if (window.history.length > 1) {
         window.history.back();
       } else {
         Router.navigate('/shipments');
       }
-      
-    } catch (err) {
-      console.error(err);
-      Components.toastError('خطا در حذف مرسوله');
-    }
+    }, 500);
+    
+  } catch (err) {
+    console.error('❌ Delete error:', err);
+    console.error('Error name:', err.name);
+    console.error('Error message:', err.message);
+    Components.toastError('خطا در حذف مرسوله: ' + err.message);
   }
+}
   
   return { render };
 })();
