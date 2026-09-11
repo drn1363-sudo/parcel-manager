@@ -11,19 +11,16 @@
   
   <title>مدیریت مرسولات</title>
   
-  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   
-  <!-- CSS -->
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   
-  <!-- Loading Screen -->
   <div id="loading-screen" class="loading-screen">
     <div class="loading-content">
       <div class="loading-icon">📦</div>
@@ -31,24 +28,18 @@
     </div>
   </div>
   
-  <!-- App Container -->
   <div id="app" class="app-container" style="display:none;">
     
-    <!-- Header -->
     <header class="app-header">
       <div class="header-content">
-        <button id="btn-back" class="btn-icon header-btn" style="display:none;" aria-label="بازگشت">
-          ←
-        </button>
+        <button id="btn-back" class="btn-icon header-btn" style="display:none;" aria-label="بازگشت">←</button>
         <h1 id="page-title" class="page-title">مدیریت مرسولات</h1>
         <button id="btn-menu" class="btn-icon header-btn" aria-label="منو">☰</button>
       </div>
     </header>
     
-    <!-- Main Content -->
     <main id="view-root" class="view-root"></main>
     
-    <!-- Bottom Navigation -->
     <nav id="bottom-nav" class="bottom-nav">
       <a href="#/dashboard" class="nav-item active" data-route="dashboard">
         <span class="nav-icon">🏠</span>
@@ -74,13 +65,9 @@
     
   </div>
   
-  <!-- Modal Root -->
   <div id="modal-root" class="modal-root"></div>
-  
-  <!-- Toast Root -->
   <div id="toast-root" class="toast-root"></div>
   
-  <!-- Scripts (order matters) -->
   <script src="js/utils.js"></script>
   <script src="js/db.js"></script>
   <script src="js/state.js"></script>
@@ -92,6 +79,9 @@
   <script src="js/views/shipment-form.js"></script>
   <script src="js/views/shipments-list.js"></script>
   <script src="js/views/shipment-detail.js"></script>
+  <script src="js/views/suppliers.js"></script>
+  <script src="js/views/supplier-detail.js"></script>
+  <script src="js/views/supplier-form.js"></script>
   <script src="js/app.js"></script>
   
 </body>
