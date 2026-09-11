@@ -1,16 +1,13 @@
 /**
  * Scan View
- * صفحه اسکن بارکد
  */
 window.Views = window.Views || {};
 Views.Scan = (function() {
   'use strict';
   
-  let cleanupFn = null;
+  let isScanning = false;
+  let scanInterval = null;
   
-  /**
-   * Render scan page
-   */
   function render(root) {
     const supported = Scanner.isSupported();
     
@@ -50,74 +47,70 @@ Views.Scan = (function() {
       </div>
     `;
     
-    // Start scanning if supported
     if (supported) {
       startScanning();
     }
     
-    // Manual entry button
     document.getElementById('btn-manual-entry').addEventListener('click', showManualEntry);
     
-    // Cleanup function
-    cleanupFn = () => {
+    return () => {
+      stopScanning();
       Scanner.stopCamera();
     };
-    
-    return cleanupFn;
   }
   
-  /**
-   * Start scanning
-   */
-  async function startScanning() {
+  function startScanning() {
     const container = document.getElementById('camera-container');
     if (!container) return;
     
-    try {
-      await Scanner.startScan(container, handleBarcodeScanned);
-    } catch (err) {
-      container.innerHTML = `
-        <div class="camera-error">
-          <div class="camera-error-icon">⚠️</div>
-          <div class="camera-error-text">${Utils.escapeHtml(err.message)}</div>
-          <button id="btn-retry-camera" class="btn btn-primary">تلاش مجدد</button>
-        </div>
-      `;
-      
-      document.getElementById('btn-retry-camera').addEventListener('click', () => {
+    Scanner.startScan(container, handleBarcodeScanned)
+      .then(() => {
+        isScanning = true;
+      })
+      .catch(err => {
         container.innerHTML = `
-          <div class="camera-placeholder">
-            <div class="camera-placeholder-icon">📷</div>
-            <div class="camera-placeholder-text">در حال آماده‌سازی دوربین...</div>
+          <div class="camera-error">
+            <div class="camera-error-icon">⚠️</div>
+            <div class="camera-error-text">${Utils.escapeHtml(err.message)}</div>
+            <button id="btn-retry-camera" class="btn btn-primary">تلاش مجدد</button>
           </div>
         `;
-        startScanning();
+        
+        document.getElementById('btn-retry-camera').addEventListener('click', () => {
+          container.innerHTML = `
+            <div class="camera-placeholder">
+              <div class="camera-placeholder-icon">📷</div>
+              <div class="camera-placeholder-text">در حال آماده‌سازی دوربین...</div>
+            </div>
+          `;
+          startScanning();
+        });
       });
+  }
+  
+  function stopScanning() {
+    isScanning = false;
+    if (scanInterval) {
+      clearInterval(scanInterval);
+      scanInterval = null;
     }
   }
   
-  /**
-   * Handle scanned barcode
-   */
   function handleBarcodeScanned(barcode) {
     const normalized = Utils.normalizeBarcode(barcode);
-    
-    // Check if barcode already exists
     const existing = State.getShipmentByBarcode(normalized);
     
     if (existing) {
-      // Barcode exists - show warning
       showDuplicateWarning(existing, normalized);
     } else {
-      // New barcode - go to form
       Router.navigate('/shipment-new', { barcode: normalized });
     }
   }
   
-  /**
-   * Show duplicate barcode warning
-   */
   function showDuplicateWarning(existing, barcode) {
+    stopScanning();
+    Scanner.stopCamera();
+    
     const supplier = State.getSupplier(existing.supplierId);
     const supplierName = supplier ? supplier.name : 'نامشخص';
     
@@ -135,33 +128,19 @@ Views.Scan = (function() {
     `;
     
     const footer = document.createElement('div');
-    footer.style.cssText = 'display: flex; gap: 8px; justify-content: flex-end; width: 100%;';
-    
-    const viewBtn = document.createElement('button');
-    viewBtn.className = 'btn btn-secondary';
-    viewBtn.textContent = 'مشاهده';
-    viewBtn.addEventListener('click', () => {
-      modal.close();
-      Router.navigate('/shipment-detail', { id: existing.id });
-    });
-    
-    const editBtn = document.createElement('button');
-    editBtn.className = 'btn btn-primary';
-    editBtn.textContent = 'ویرایش';
-    editBtn.addEventListener('click', () => {
-      modal.close();
-      Router.navigate('/shipment-edit', { id: existing.id });
-    });
+    footer.style.cssText = 'display: flex; gap: 8px; justify-content: flex-end; width: 100%; flex-wrap: wrap;';
     
     const continueBtn = document.createElement('button');
     continueBtn.className = 'btn btn-ghost';
     continueBtn.textContent = 'ادامه اسکن';
-    continueBtn.addEventListener('click', () => {
-      modal.close();
-      // Resume scanning
-      isScanning = true;
-      scanInterval = setInterval(scanFrame, 200);
-    });
+    
+    const viewBtn = document.createElement('button');
+    viewBtn.className = 'btn btn-secondary';
+    viewBtn.textContent = 'مشاهده';
+    
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn btn-primary';
+    editBtn.textContent = 'ویرایش';
     
     footer.appendChild(continueBtn);
     footer.appendChild(viewBtn);
@@ -173,14 +152,34 @@ Views.Scan = (function() {
       footer: footer
     });
     
-    // Pause scanning while modal is shown
-    Scanner.stopCamera();
+    viewBtn.addEventListener('click', () => {
+      modal.close();
+      Router.navigate('/shipment-detail', { id: existing.id });
+    });
+    
+    editBtn.addEventListener('click', () => {
+      modal.close();
+      Router.navigate('/shipment-edit', { id: existing.id });
+    });
+    
+    continueBtn.addEventListener('click', () => {
+      modal.close();
+      // Restart camera and scanning
+      const container = document.getElementById('camera-container');
+      if (container) {
+        container.innerHTML = `
+          <div class="camera-placeholder">
+            <div class="camera-placeholder-icon">📷</div>
+            <div class="camera-placeholder-text">در حال آماده‌سازی دوربین...</div>
+          </div>
+        `;
+        startScanning();
+      }
+    });
   }
   
-  /**
-   * Show manual entry dialog
-   */
   function showManualEntry() {
+    stopScanning();
     Scanner.stopCamera();
     
     const content = document.createElement('div');
@@ -201,16 +200,44 @@ Views.Scan = (function() {
     const cancelBtn = document.createElement('button');
     cancelBtn.className = 'btn btn-secondary';
     cancelBtn.textContent = 'انصراف';
-    cancelBtn.addEventListener('click', () => {
-      modal.close();
-      // Restart camera
-      const container = document.getElementById('camera-container');
-      if (container) startScanning();
-    });
     
     const submitBtn = document.createElement('button');
     submitBtn.className = 'btn btn-primary';
     submitBtn.textContent = 'ادامه';
+    
+    footer.appendChild(cancelBtn);
+    footer.appendChild(submitBtn);
+    
+    const modal = Components.modal({
+      title: '✍️ ورود دستی بارکد',
+      content: content,
+      footer: footer
+    });
+    
+    setTimeout(() => {
+      const input = document.getElementById('manual-barcode');
+      if (input) {
+        input.focus();
+        input.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') submitBtn.click();
+        });
+      }
+    }, 100);
+    
+    cancelBtn.addEventListener('click', () => {
+      modal.close();
+      const container = document.getElementById('camera-container');
+      if (container) {
+        container.innerHTML = `
+          <div class="camera-placeholder">
+            <div class="camera-placeholder-icon">📷</div>
+            <div class="camera-placeholder-text">در حال آماده‌سازی دوربین...</div>
+          </div>
+        `;
+        startScanning();
+      }
+    });
+    
     submitBtn.addEventListener('click', () => {
       const input = document.getElementById('manual-barcode');
       const barcode = Utils.normalizeBarcode(input.value);
@@ -223,34 +250,7 @@ Views.Scan = (function() {
       modal.close();
       handleBarcodeScanned(barcode);
     });
-    
-    footer.appendChild(cancelBtn);
-    footer.appendChild(submitBtn);
-    
-    const modal = Components.modal({
-      title: '✍️ ورود دستی بارکد',
-      content: content,
-      footer: footer
-    });
-    
-    // Focus input after modal opens
-    setTimeout(() => {
-      const input = document.getElementById('manual-barcode');
-      if (input) input.focus();
-    }, 100);
-    
-    // Enter key submits
-    setTimeout(() => {
-      const input = document.getElementById('manual-barcode');
-      if (input) {
-        input.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') submitBtn.click();
-        });
-      }
-    }, 100);
   }
   
-  // Public API
   return { render };
-  
 })();
