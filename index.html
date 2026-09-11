@@ -11,11 +11,10 @@
   
   <title>مدیریت مرسولات</title>
   
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  
   <!-- PWA -->
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   
   <!-- CSS -->
   <link rel="stylesheet" href="css/theme.css">
@@ -24,7 +23,7 @@
 </head>
 <body>
   
-  <!-- Splash / Loading -->
+  <!-- Loading Screen -->
   <div id="loading-screen" class="loading-screen">
     <div class="loading-content">
       <div class="loading-icon">📦</div>
@@ -46,12 +45,10 @@
       </div>
     </header>
     
-    <!-- Main Content (Router renders here) -->
-    <main id="view-root" class="view-root">
-      <!-- Views will be injected here -->
-    </main>
+    <!-- Main Content -->
+    <main id="view-root" class="view-root"></main>
     
-    <!-- Bottom Navigation (optional, for main sections) -->
+    <!-- Bottom Navigation -->
     <nav id="bottom-nav" class="bottom-nav">
       <a href="#/dashboard" class="nav-item active" data-route="dashboard">
         <span class="nav-icon">🏠</span>
@@ -89,10 +86,12 @@
   <script src="js/state.js"></script>
   <script src="js/router.js"></script>
   <script src="js/components.js"></script>
-  <script src="js/views/dashboard.js"></script>
   <script src="js/scanner.js"></script>
+  <script src="js/views/dashboard.js"></script>
   <script src="js/views/scan.js"></script>
   <script src="js/views/shipment-form.js"></script>
+  <script src="js/views/shipments-list.js"></script>
+  <script src="js/views/shipment-detail.js"></script>
   <script src="js/app.js"></script>
   
 </body>
