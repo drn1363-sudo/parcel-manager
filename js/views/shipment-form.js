@@ -1,6 +1,5 @@
 /**
  * Shipment Form View
- * فرم ثبت و ویرایش مرسوله
  */
 window.Views = window.Views || {};
 Views.ShipmentForm = (function() {
@@ -9,20 +8,17 @@ Views.ShipmentForm = (function() {
   let currentShipment = null;
   let isEditMode = false;
   
-  /**
-   * Render form
-   */
   function render(root, params) {
     const shipmentId = params.id;
     const barcodeFromScan = params.barcode;
+    const supplierIdFromNav = params.supplierId;
     
     isEditMode = !!shipmentId;
     currentShipment = isEditMode ? State.getShipment(shipmentId) : null;
     
-    // Prepare default values
     const defaults = {
       barcode: barcodeFromScan || (currentShipment ? currentShipment.barcode : ''),
-      supplierId: currentShipment ? currentShipment.supplierId : '',
+      supplierId: supplierIdFromNav || (currentShipment ? currentShipment.supplierId : ''),
       senderName: currentShipment ? currentShipment.senderName || '' : '',
       carrier: currentShipment ? currentShipment.carrier || '' : '',
       contents: currentShipment ? currentShipment.contents || '' : '',
@@ -37,12 +33,9 @@ Views.ShipmentForm = (function() {
         : toLocalDateTimeInput(new Date().toISOString())
     };
     
-    const suppliers = State.get('suppliers');
-    
     root.innerHTML = `
       <form id="shipment-form" class="shipment-form">
         
-        <!-- Barcode -->
         <div class="form-group">
           <label class="form-label">شماره بارکد / مرسوله *</label>
           <input type="text" id="f-barcode" class="form-input" 
@@ -51,7 +44,6 @@ Views.ShipmentForm = (function() {
                  style="text-align: left; font-family: monospace;">
         </div>
         
-        <!-- Supplier -->
         <div class="form-group">
           <label class="form-label">فروشگاه / تأمین‌کننده</label>
           <div class="autocomplete-wrapper">
@@ -67,7 +59,6 @@ Views.ShipmentForm = (function() {
           </button>
         </div>
         
-        <!-- Sender -->
         <div class="form-group">
           <label class="form-label">نام ارسال‌کننده</label>
           <input type="text" id="f-sender" class="form-input" 
@@ -75,7 +66,6 @@ Views.ShipmentForm = (function() {
                  placeholder="اختیاری">
         </div>
         
-        <!-- Status -->
         <div class="form-group">
           <label class="form-label">وضعیت</label>
           <select id="f-status" class="form-select">
@@ -87,21 +77,18 @@ Views.ShipmentForm = (function() {
           </select>
         </div>
         
-        <!-- Received At -->
         <div class="form-group">
           <label class="form-label">تاریخ و ساعت دریافت</label>
           <input type="datetime-local" id="f-received-at" class="form-input" 
                  value="${defaults.receivedAt}" dir="ltr" style="text-align: left;">
         </div>
         
-        <!-- Sent At -->
         <div class="form-group">
           <label class="form-label">تاریخ و ساعت ارسال</label>
           <input type="datetime-local" id="f-sent-at" class="form-input" 
                  value="${defaults.sentAt}" dir="ltr" style="text-align: left;">
         </div>
         
-        <!-- Carrier -->
         <div class="form-group">
           <label class="form-label">شرکت حمل / پست</label>
           <input type="text" id="f-carrier" class="form-input" 
@@ -109,7 +96,6 @@ Views.ShipmentForm = (function() {
                  placeholder="مثلاً: پست پیشتاز، تیپاکس، باربری">
         </div>
         
-        <!-- Contents -->
         <div class="form-group">
           <label class="form-label">محتویات بسته</label>
           <input type="text" id="f-contents" class="form-input" 
@@ -117,7 +103,6 @@ Views.ShipmentForm = (function() {
                  placeholder="مثلاً: ست دخترانه، لباس پسرانه">
         </div>
         
-        <!-- Item Count -->
         <div class="form-group">
           <label class="form-label">تعداد اقلام</label>
           <input type="number" id="f-item-count" class="form-input" 
@@ -125,14 +110,12 @@ Views.ShipmentForm = (function() {
                  placeholder="مثلاً: 35" min="0" dir="ltr" style="text-align: left;">
         </div>
         
-        <!-- Notes -->
         <div class="form-group">
           <label class="form-label">توضیحات</label>
           <textarea id="f-notes" class="form-textarea" 
                     placeholder="توضیحات اضافی...">${Utils.escapeHtml(defaults.notes)}</textarea>
         </div>
         
-        <!-- Actions -->
         <div class="form-actions">
           <button type="button" id="btn-cancel" class="btn btn-secondary btn-block">
             انصراف
@@ -146,39 +129,26 @@ Views.ShipmentForm = (function() {
     `;
     
     attachEvents();
-    
     return null;
   }
   
-  /**
-   * Get supplier name by ID
-   */
   function getSupplierName(id) {
     if (!id) return '';
     const supplier = State.getSupplier(id);
     return supplier ? supplier.name : '';
   }
   
-  /**
-   * Convert ISO string to datetime-local input value
-   */
   function toLocalDateTimeInput(isoString) {
     if (!isoString) return '';
     const d = new Date(isoString);
     if (isNaN(d.getTime())) return '';
-    // Format: YYYY-MM-DDTHH:MM
     const pad = n => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
   
-  /**
-   * Attach event listeners
-   */
   function attachEvents() {
-    // Form submit
     document.getElementById('shipment-form').addEventListener('submit', handleSubmit);
     
-    // Cancel
     document.getElementById('btn-cancel').addEventListener('click', () => {
       if (window.history.length > 1) {
         window.history.back();
@@ -187,7 +157,6 @@ Views.ShipmentForm = (function() {
       }
     });
     
-    // Supplier autocomplete
     const searchInput = document.getElementById('f-supplier-search');
     const suggestionsBox = document.getElementById('supplier-suggestions');
     
@@ -206,20 +175,15 @@ Views.ShipmentForm = (function() {
       }
     });
     
-    // Close suggestions on outside click
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.autocomplete-wrapper')) {
         suggestionsBox.innerHTML = '';
       }
     });
     
-    // New supplier button
     document.getElementById('btn-new-supplier').addEventListener('click', showNewSupplierModal);
   }
   
-  /**
-   * Show supplier suggestions
-   */
   function showSuggestions(query) {
     const suggestionsBox = document.getElementById('supplier-suggestions');
     const suppliers = State.get('suppliers');
@@ -247,7 +211,6 @@ Views.ShipmentForm = (function() {
       </div>
     `).join('');
     
-    // Click handlers
     suggestionsBox.querySelectorAll('.suggestion-item[data-id]').forEach(item => {
       item.addEventListener('click', () => {
         const id = item.getAttribute('data-id');
@@ -259,9 +222,6 @@ Views.ShipmentForm = (function() {
     });
   }
   
-  /**
-   * Show new supplier modal
-   */
   function showNewSupplierModal() {
     const content = document.createElement('div');
     content.innerHTML = `
@@ -312,7 +272,6 @@ Views.ShipmentForm = (function() {
         return;
       }
       
-      // Check duplicate
       if (State.getSupplierByName(name)) {
         Components.toastError('فروشگاهی با این نام قبلاً ثبت شده');
         return;
@@ -333,7 +292,6 @@ Views.ShipmentForm = (function() {
         await DB.add(DB.STORES.SUPPLIERS, newSupplier);
         await State.loadSuppliers();
         
-        // Set in form
         document.getElementById('f-supplier-search').value = name;
         document.getElementById('f-supplier-id').value = newSupplier.id;
         
@@ -345,15 +303,11 @@ Views.ShipmentForm = (function() {
       }
     });
     
-    // Focus first input
     setTimeout(() => {
       document.getElementById('new-supplier-name').focus();
     }, 100);
   }
   
-  /**
-   * Handle form submit
-   */
   async function handleSubmit(e) {
     e.preventDefault();
     
@@ -364,7 +318,6 @@ Views.ShipmentForm = (function() {
       return;
     }
     
-    // Check duplicate barcode (only in create mode)
     if (!isEditMode) {
       const existing = State.getShipmentByBarcode(barcode);
       if (existing) {
@@ -376,27 +329,26 @@ Views.ShipmentForm = (function() {
     const supplierId = document.getElementById('f-supplier-id').value;
     const status = document.getElementById('f-status').value;
     const receivedAtInput = document.getElementById('f-received-at').value;
-    const sentAtInput = document.getElementById('f-sent-at').const shipmentData = {
-  barcode: barcode,
-  supplierId: supplierId || '',
-  senderName: document.getElementById('f-sender').value.trim() || '',
-  status: status,
-  receivedAt: receivedAtInput ? new Date(receivedAtInput).toISOString() : new Date().toISOString(),
-  sentAt: sentAtInput ? new Date(sentAtInput).toISOString() : '',
-  carrier: document.getElementById('f-carrier').value.trim() || '',
-  contents: document.getElementById('f-contents').value.trim() || '',
-  itemCount: parseInt(document.getElementById('f-item-count').value) || 0,
-  notes: document.getElementById('f-notes').value.trim() || '',
-  photoIds: [],
-  relatedOrderId: '',
-  updatedAt: Utils.nowISO()
-};
-
-
+    const sentAtInput = document.getElementById('f-sent-at').value;
+    
+    const shipmentData = {
+      barcode: barcode,
+      supplierId: supplierId || '',
+      senderName: document.getElementById('f-sender').value.trim() || '',
+      status: status,
+      receivedAt: receivedAtInput ? new Date(receivedAtInput).toISOString() : new Date().toISOString(),
+      sentAt: sentAtInput ? new Date(sentAtInput).toISOString() : '',
+      carrier: document.getElementById('f-carrier').value.trim() || '',
+      contents: document.getElementById('f-contents').value.trim() || '',
+      itemCount: parseInt(document.getElementById('f-item-count').value) || 0,
+      notes: document.getElementById('f-notes').value.trim() || '',
+      photoIds: [],
+      relatedOrderId: '',
+      updatedAt: Utils.nowISO()
+    };
     
     try {
       if (isEditMode) {
-        // Update existing
         shipmentData.id = currentShipment.id;
         shipmentData.displayIndex = currentShipment.displayIndex;
         shipmentData.createdAt = currentShipment.createdAt;
@@ -404,7 +356,6 @@ Views.ShipmentForm = (function() {
         await DB.put(DB.STORES.SHIPMENTS, shipmentData);
         Components.toastSuccess('مرسوله ویرایش شد ✅');
       } else {
-        // Create new
         const nextIndex = await DB.getNextDisplayIndex();
         shipmentData.id = Utils.generateId();
         shipmentData.displayIndex = nextIndex;
@@ -414,10 +365,7 @@ Views.ShipmentForm = (function() {
         Components.toastSuccess(`مرسوله #${nextIndex} ثبت شد ✅`);
       }
       
-      // Reload shipments
       await State.loadShipments();
-      
-      // Navigate back to dashboard
       Router.navigate('/dashboard');
       
     } catch (err) {
@@ -430,7 +378,5 @@ Views.ShipmentForm = (function() {
     }
   }
   
-  // Public API
   return { render };
-  
 })();
