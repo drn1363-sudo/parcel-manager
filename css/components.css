@@ -1148,3 +1148,230 @@
   color: var(--color-primary);
   font-weight: 600;
 }
+/* ============================================
+   Month Stats Banner
+   ============================================ */
+
+.month-stats-banner {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  color: var(--color-primary-text);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.month-stats-label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.month-stats-value {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ============================================
+   Reports Page
+   ============================================ */
+
+.reports-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.report-section {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+}
+
+.report-section-warning {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.03);
+}
+
+.report-section-info {
+  border-color: rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.03);
+}
+
+.report-section-title {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  margin-bottom: var(--space-md);
+  color: var(--color-text);
+}
+
+.report-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm);
+}
+
+.report-stats-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.report-stat {
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  text-align: center;
+}
+
+.report-stat-value {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.report-stat-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.report-stat.stat-delivered .report-stat-value { color: var(--color-success); }
+.report-stat.stat-pending .report-stat-value { color: var(--color-info); }
+.report-stat.stat-problem .report-stat-value { color: var(--color-danger); }
+.report-stat.stat-returned .report-stat-value { color: #8b5cf6; }
+.report-stat.stat-cancelled .report-stat-value { color: var(--color-text-muted); }
+
+/* Supplier Report */
+.supplier-report-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.supplier-report-item {
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.supplier-report-item:active {
+  transform: scale(0.98);
+}
+
+.supplier-report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+}
+
+.supplier-report-name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.supplier-report-total {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.supplier-report-bar {
+  height: 6px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  display: flex;
+  margin-bottom: var(--space-sm);
+}
+
+.bar-delivered {
+  background: var(--color-success);
+  height: 100%;
+}
+
+.bar-pending {
+  background: var(--color-info);
+  height: 100%;
+}
+
+.bar-problem {
+  background: var(--color-danger);
+  height: 100%;
+}
+
+.supplier-report-stats {
+  display: flex;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+
+/* Monthly Report */
+.monthly-report-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.monthly-report-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+}
+
+.monthly-report-name {
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.monthly-report-count {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* Problem/Pending Shipments */
+.problem-shipments-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.problem-shipment-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.problem-shipment-item:active {
+  transform: scale(0.98);
+}
+
+.problem-shipment-barcode {
+  font-family: 'Courier New', monospace;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  direction: ltr;
+  text-align: right;
+}
+
+.problem-shipment-info {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
