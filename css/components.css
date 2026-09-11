@@ -787,3 +787,133 @@
   gap: var(--space-xs);
   font-size: var(--font-size-sm);
 }
+/* ============================================
+   Filters Row
+   ============================================ */
+
+.filters-row {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.filters-row .form-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.results-count {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-sm);
+  text-align: center;
+}
+
+/* ============================================
+   Shipment Detail
+   ============================================ */
+
+.shipment-detail {
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detail-index {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.detail-section {
+  margin-bottom: var(--space-md);
+}
+
+.detail-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+.detail-value.barcode-value {
+  font-family: 'Courier New', monospace;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  background: var(--color-bg-subtle);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  display: inline-block;
+}
+
+.detail-value.notes-value {
+  background: var(--color-bg-subtle);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.detail-sub {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.detail-metadata {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-actions {
+  margin-top: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.btn-copy {
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  border: none;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all var(--transition-fast);
+}
+
+.btn-copy:active {
+  transform: scale(0.95);
+  background: var(--color-primary-hover);
+}
