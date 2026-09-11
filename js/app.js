@@ -1,13 +1,8 @@
 /**
  * App Module
- * Bootstrap and initialization
  */
 (function() {
   'use strict';
-  
-  // ============================================
-  // Placeholder Views
-  // ============================================
   
   function placeholderView(title, icon) {
     return function(root) {
@@ -21,69 +16,67 @@
     };
   }
   
-  // ============================================
-  // Register Routes
-  // ============================================
-  
   function registerRoutes() {
-    // Dashboard
     Router.register('/dashboard', {
       title: 'مدیریت مرسولات',
       view: Views.Dashboard.render
     });
     
-    // Shipments list
     Router.register('/shipments', {
       title: 'مرسولات',
       view: Views.ShipmentsList.render
     });
     
-    // Scan
     Router.register('/scan', {
       title: 'اسکن بارکد',
       view: Views.Scan.render
     });
     
-    // Suppliers
     Router.register('/suppliers', {
       title: 'فروشگاه‌ها',
-      view: placeholderView('فروشگاه‌ها و تأمین‌کنندگان', '🏪')
+      view: Views.Suppliers.render
     });
     
-    // Settings
+    Router.register('/supplier-new', {
+      title: 'افزودن فروشگاه',
+      view: Views.SupplierForm.render
+    });
+    
+    Router.register('/supplier-edit', {
+      title: 'ویرایش فروشگاه',
+      view: Views.SupplierForm.render
+    });
+    
+    Router.register('/supplier-detail', {
+      title: 'جزئیات فروشگاه',
+      view: Views.SupplierDetail.render
+    });
+    
     Router.register('/settings', {
       title: 'تنظیمات',
       view: placeholderView('تنظیمات', '⚙️')
     });
     
-    // Reports
     Router.register('/reports', {
       title: 'گزارش‌ها',
       view: placeholderView('گزارش‌ها', '📊')
     });
     
-    // Shipment Form (New)
     Router.register('/shipment-new', {
       title: 'ثبت مرسوله جدید',
       view: Views.ShipmentForm.render
     });
     
-    // Shipment Form (Edit)
     Router.register('/shipment-edit', {
       title: 'ویرایش مرسوله',
       view: Views.ShipmentForm.render
     });
     
-    // Shipment Detail
     Router.register('/shipment-detail', {
       title: 'جزئیات مرسوله',
       view: Views.ShipmentDetail.render
     });
   }
-  
-  // ============================================
-  // Theme Management
-  // ============================================
   
   async function applyTheme(theme) {
     if (!theme) theme = 'light';
@@ -98,19 +91,10 @@
     }
   }
   
-  // ============================================
-  // Service Worker Registration
-  // ============================================
-  
   async function registerServiceWorker() {
-    // موقتاً غیرفعال شده
     console.log('Service Worker disabled for testing');
     return;
   }
-  
-  // ============================================
-  // Header Button Handlers
-  // ============================================
   
   function setupHeaderButtons() {
     const backBtn = document.getElementById('btn-back');
@@ -132,43 +116,27 @@
     }
   }
   
-  // ============================================
-  // Initialization
-  // ============================================
-  
   async function init() {
     try {
       console.log('🚀 Initializing Parcel Manager...');
       
-      // 1. Initialize database
       await DB.init();
       console.log('✅ Database initialized');
       
-      // 2. Load settings
       const settings = await State.loadSettings();
       console.log('✅ Settings loaded');
       
-      // 3. Apply theme
       await applyTheme(settings.theme || 'light');
       
-      // 4. Load data
       await State.loadShipments();
       await State.loadSuppliers();
       console.log('✅ Data loaded');
       
-      // 5. Register routes
       registerRoutes();
-      
-      // 6. Setup UI
       setupHeaderButtons();
-      
-      // 7. Start router
       Router.start();
-      
-      // 8. Register service worker
       registerServiceWorker();
       
-      // 9. Hide loading screen, show app
       const loadingScreen = document.getElementById('loading-screen');
       const app = document.getElementById('app');
       if (loadingScreen) {
@@ -194,10 +162,6 @@
       }
     }
   }
-  
-  // ============================================
-  // Start when DOM is ready
-  // ============================================
   
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
