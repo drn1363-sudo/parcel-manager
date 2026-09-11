@@ -54,7 +54,7 @@
     
     Router.register('/settings', {
       title: 'تنظیمات',
-      view: placeholderView('تنظیمات', '⚙️')
+      view: Views.Settings.render
     });
     
     Router.register('/reports', {
