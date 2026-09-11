@@ -1,21 +1,15 @@
 /**
  * Dashboard View
- * صفحه اصلی با آمار و دسترسی سریع
  */
 window.Views = window.Views || {};
 Views.Dashboard = (function() {
   'use strict';
   
-  /**
-   * Render dashboard
-   */
   function render(root) {
-    // Get data from state
     const stats = State.getStats();
     const allShipments = State.get('shipments');
-    const recentShipments = allShipments.slice(0, 5); // Last 5
+    const recentShipments = allShipments.slice(0, 5);
     
-    // Build HTML
     root.innerHTML = `
       <!-- Stats Grid -->
       <div class="stat-grid">
@@ -35,6 +29,12 @@ Views.Dashboard = (function() {
           <div class="stat-value">${stats.problem}</div>
           <div class="stat-label">⚠️ مشکل‌دار</div>
         </div>
+      </div>
+      
+      <!-- This Month Stats -->
+      <div class="month-stats-banner">
+        <div class="month-stats-label">📅 دریافت این ماه</div>
+        <div class="month-stats-value">${stats.monthReceived}</div>
       </div>
       
       <!-- Main Action: Scan -->
@@ -74,16 +74,10 @@ Views.Dashboard = (function() {
       </div>
     `;
     
-    // Attach event listeners
     attachEvents();
-    
-    // No cleanup needed
     return null;
   }
   
-  /**
-   * Render recent shipments list
-   */
   function renderRecentShipments(shipments) {
     if (shipments.length === 0) {
       return `
@@ -118,12 +112,8 @@ Views.Dashboard = (function() {
     }).join('');
   }
   
-  /**
-   * Attach event listeners
-   */
   function attachEvents() {
-    // Click on shipment item → navigate to detail
-    document.querySelectorAll('.shipment-item').forEach(item => {
+    document.querySelectorAll('#recent-shipments-list .shipment-item').forEach(item => {
       item.addEventListener('click', () => {
         const id = item.getAttribute('data-id');
         Router.navigate('/shipment-detail', { id });
@@ -131,7 +121,5 @@ Views.Dashboard = (function() {
     });
   }
   
-  // Public API
   return { render };
-  
 })();
