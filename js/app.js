@@ -21,7 +21,11 @@
       title: 'مدیریت مرسولات',
       view: Views.Dashboard.render
     });
-    
+
+    Router.register('/crop', {
+      title: 'برش عکس',
+      view: Views.Crop.render
+    });
     Router.register('/shipments', {
       title: 'مرسولات',
       view: Views.ShipmentsList.render
