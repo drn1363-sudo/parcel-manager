@@ -255,7 +255,7 @@ async function showDeleteConfirm(shipment) {
     console.error('Error message:', err.message);
     Components.toastError('خطا در حذف مرسوله: ' + err.message);
   }
-}
+}  
   
   return { render };
 })();
