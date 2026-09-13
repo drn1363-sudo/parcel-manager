@@ -64,8 +64,10 @@ Views.Scan = (function() {
     
     document.getElementById('btn-manual-entry').addEventListener('click', showManualEntry);
     document.getElementById('btn-gallery').addEventListener('click', () => {
-      document.getElementById('gallery-input').click();
-    });
+  document.getElementById('gallery-input').click();
+});
+
+// Modified handleGalleryImage to go to crop view
     document.getElementById('gallery-input').addEventListener('change', handleGalleryImage);
     
     return () => {
