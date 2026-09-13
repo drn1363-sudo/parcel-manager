@@ -115,100 +115,165 @@ Views.Scan = (function() {
   // Gallery Image Scan
   // ============================================
   
-  async function handleGalleryImage(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+async function handleGalleryImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  e.target.value = '';
+  
+  stopScanning();
+  Scanner.stopCamera();
+  
+  const container = document.getElementById('camera-container');
+  const originalContent = container.innerHTML;
+  container.innerHTML = `
+    <div class="camera-placeholder">
+      <div class="loading-spinner"></div>
+      <div class="camera-placeholder-text">در حال بررسی عکس...</div>
+    </div>
+  `;
+  
+  try {
+    // Load image
+    const imageUrl = URL.createObjectURL(file);
+    const img = new Image();
     
-    // Reset input so same file can be selected again
-    e.target.value = '';
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = () => reject(new Error('خطا در بارگذاری عکس'));
+      img.src = imageUrl;
+    });
     
-    // Stop camera while processing
-    stopScanning();
-    Scanner.stopCamera();
+    console.log('Original image size:', img.width, 'x', img.height);
     
-    // Show loading state
-    const container = document.getElementById('camera-container');
-    const originalContent = container.innerHTML;
+    // Create canvas for preprocessing
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Resize if too large (max 2000px)
+    const maxSize = 2000;
+    let width = img.width;
+    let height = img.height;
+    
+    if (width > maxSize || height > maxSize) {
+      if (width > height) {
+        height = (height / width) * maxSize;
+        width = maxSize;
+      } else {
+        width = (width / height) * maxSize;
+        height = maxSize;
+      }
+    }
+    
+    canvas.width = width;
+    canvas.height = height;
+    
+    // Draw image on canvas (this also fixes orientation)
+    ctx.drawImage(img, 0, 0, width, height);
+    
+    // Clean up
+    URL.revokeObjectURL(imageUrl);
+    
+    console.log('Resized image:', width, 'x', height);
+    
+    // Try to detect barcode
+    if (!Scanner.isSupported()) {
+      throw new Error('مرورگر از تشخیص بارکد پشتیبانی نمی‌کند');
+    }
+    
+    const detector = new BarcodeDetector();
+    
+    // Try detection on canvas
+    let barcodes = await detector.detect(canvas);
+    
+    console.log('Detection attempt 1:', barcodes.length, 'barcodes found');
+    
+    // If not found, try with enhanced contrast
+    if (barcodes.length === 0) {
+      console.log('Trying with enhanced contrast...');
+      
+      // Apply contrast enhancement
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const data = imageData.data;
+      
+      for (let i = 0; i < data.length; i += 4) {
+        // Convert to grayscale
+        const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+        
+        // Enhance contrast
+        const enhanced = gray < 128 ? gray * 0.7 : gray * 1.3;
+        const clamped = Math.max(0, Math.min(255, enhanced));
+        
+        data[i] = clamped;
+        data[i + 1] = clamped;
+        data[i + 2] = clamped;
+      }
+      
+      ctx.putImageData(imageData, 0, 0);
+      
+      barcodes = await detector.detect(canvas);
+      console.log('Detection attempt 2 (enhanced):', barcodes.length, 'barcodes found');
+    }
+    
+    if (barcodes && barcodes.length > 0) {
+      const barcode = barcodes[0];
+      const rawValue = barcode.rawValue;
+      
+      if (rawValue) {
+        console.log('✅ Barcode detected:', rawValue, 'Format:', barcode.format);
+        
+        Utils.vibrate(100);
+        Utils.playBeep();
+        
+        Components.toastSuccess(`✅ بارکد پیدا شد: ${rawValue}`);
+        
+        container.innerHTML = originalContent;
+        handleBarcodeScanned(rawValue);
+        return;
+      }
+    }
+    
+    // No barcode found
+    throw new Error('بارکدی در این عکس پیدا نشد');
+    
+  } catch (err) {
+    console.error('Gallery scan error:', err);
+    
     container.innerHTML = `
-      <div class="camera-placeholder">
-        <div class="loading-spinner"></div>
-        <div class="camera-placeholder-text">در حال بررسی عکس...</div>
+      <div class="camera-error">
+        <div class="camera-error-icon">⚠️</div>
+        <div class="camera-error-text">${Utils.escapeHtml(err.message)}</div>
+        <div class="camera-error-tips">
+          <p style="font-size: 12px; margin-top: 8px; text-align: right;">
+            💡 <strong>نکات برای عکس بهتر:</strong><br>
+            • بارکد واضح و کامل باشد<br>
+            • نور کافی باشد<br>
+            • بارکد صاف و بدون زاویه باشد<br>
+            • فاصله مناسب (نه خیلی نزدیک)
+          </p>
+        </div>
+        <div class="camera-error-buttons">
+          <button id="btn-retry-gallery" class="btn btn-primary">تلاش مجدد</button>
+          <button id="btn-back-to-camera" class="btn btn-secondary">بازگشت به دوربین</button>
+        </div>
       </div>
     `;
     
-    try {
-      // Load image
-      const imageUrl = URL.createObjectURL(file);
-      const img = new Image();
-      
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = () => reject(new Error('خطا در بارگذاری عکس'));
-        img.src = imageUrl;
-      });
-      
-      // Detect barcode
-      if (!Scanner.isSupported()) {
-        throw new Error('مرورگر از تشخیص بارکد پشتیبانی نمی‌کند');
-      }
-      
-      const detector = new BarcodeDetector();
-      const barcodes = await detector.detect(img);
-      
-      // Clean up
-      URL.revokeObjectURL(imageUrl);
-      
-      if (barcodes && barcodes.length > 0) {
-        const barcode = barcodes[0];
-        const rawValue = barcode.rawValue;
-        
-        if (rawValue) {
-          Utils.vibrate(100);
-          Utils.playBeep();
-          
-          Components.toastSuccess(`✅ بارکد پیدا شد: ${rawValue}`);
-          
-          // Restore camera view briefly then handle
-          container.innerHTML = originalContent;
-          handleBarcodeScanned(rawValue);
-          return;
-        }
-      }
-      
-      // No barcode found
-      throw new Error('بارکدی در این عکس پیدا نشد');
-      
-    } catch (err) {
-      console.error('Gallery scan error:', err);
-      
-      // Show error with retry option
+    document.getElementById('btn-retry-gallery').addEventListener('click', () => {
+      document.getElementById('gallery-input').click();
+    });
+    
+    document.getElementById('btn-back-to-camera').addEventListener('click', () => {
       container.innerHTML = `
-        <div class="camera-error">
-          <div class="camera-error-icon">⚠️</div>
-          <div class="camera-error-text">${Utils.escapeHtml(err.message)}</div>
-          <div class="camera-error-buttons">
-            <button id="btn-retry-gallery" class="btn btn-primary">تلاش مجدد</button>
-            <button id="btn-back-to-camera" class="btn btn-secondary">بازگشت به دوربین</button>
-          </div>
+        <div class="camera-placeholder">
+          <div class="camera-placeholder-icon">📷</div>
+          <div class="camera-placeholder-text">در حال آماده‌سازی دوربین...</div>
         </div>
       `;
-      
-      document.getElementById('btn-retry-gallery').addEventListener('click', () => {
-        document.getElementById('gallery-input').click();
-      });
-      
-      document.getElementById('btn-back-to-camera').addEventListener('click', () => {
-        container.innerHTML = `
-          <div class="camera-placeholder">
-            <div class="camera-placeholder-icon">📷</div>
-            <div class="camera-placeholder-text">در حال آماده‌سازی دوربین...</div>
-          </div>
-        `;
-        startScanning();
-      });
-    }
+      startScanning();
+    });
   }
-  
+}
   // ============================================
   // Barcode Handling
   // ============================================
