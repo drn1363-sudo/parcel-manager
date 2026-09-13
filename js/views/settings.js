@@ -301,7 +301,7 @@ Views.Settings = (function() {
   // Clear All
   // ============================================
   
-  async function clearAllData() {
+async function clearAllData() {
   const shipments = State.get('shipments');
   const suppliers = State.get('suppliers');
   
