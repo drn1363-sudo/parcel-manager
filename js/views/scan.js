@@ -27,7 +27,7 @@ Views.Scan = (function() {
         <div class="scan-guide">
           <div class="scan-guide-icon">📷</div>
           <h2 class="scan-guide-title">اسکن بارکد</h2>
-          <p class="scan-guide-text">بارکد روی بسته را جلوی دوربین بگیرید</p>
+          <p class="scan-guide-text">بارکد را اسکن کنید یا از گالری انتخاب کنید</p>
         </div>
         
         <div id="camera-container" class="camera-container">
@@ -37,12 +37,23 @@ Views.Scan = (function() {
           </div>
         </div>
         
-        <div class="scan-manual">
+        <!-- Alternative Methods -->
+        <div class="scan-alternatives">
           <div class="divider-text">یا</div>
-          <button id="btn-manual-entry" class="btn btn-secondary btn-block">
-            ✍️ ورود دستی بارکد
-          </button>
+          
+          <div class="alternative-buttons">
+            <button id="btn-gallery" class="btn btn-secondary btn-block alternative-btn">
+              🖼️ انتخاب از گالری
+            </button>
+            
+            <button id="btn-manual-entry" class="btn btn-secondary btn-block alternative-btn">
+              ✍️ ورود دستی بارکد
+            </button>
+          </div>
         </div>
+        
+        <!-- Hidden file input for gallery -->
+        <input type="file" id="gallery-input" accept="image/*" style="display: none;">
         
       </div>
     `;
@@ -52,6 +63,10 @@ Views.Scan = (function() {
     }
     
     document.getElementById('btn-manual-entry').addEventListener('click', showManualEntry);
+    document.getElementById('btn-gallery').addEventListener('click', () => {
+      document.getElementById('gallery-input').click();
+    });
+    document.getElementById('gallery-input').addEventListener('change', handleGalleryImage);
     
     return () => {
       stopScanning();
@@ -95,6 +110,108 @@ Views.Scan = (function() {
       scanInterval = null;
     }
   }
+  
+  // ============================================
+  // Gallery Image Scan
+  // ============================================
+  
+  async function handleGalleryImage(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Reset input so same file can be selected again
+    e.target.value = '';
+    
+    // Stop camera while processing
+    stopScanning();
+    Scanner.stopCamera();
+    
+    // Show loading state
+    const container = document.getElementById('camera-container');
+    const originalContent = container.innerHTML;
+    container.innerHTML = `
+      <div class="camera-placeholder">
+        <div class="loading-spinner"></div>
+        <div class="camera-placeholder-text">در حال بررسی عکس...</div>
+      </div>
+    `;
+    
+    try {
+      // Load image
+      const imageUrl = URL.createObjectURL(file);
+      const img = new Image();
+      
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = () => reject(new Error('خطا در بارگذاری عکس'));
+        img.src = imageUrl;
+      });
+      
+      // Detect barcode
+      if (!Scanner.isSupported()) {
+        throw new Error('مرورگر از تشخیص بارکد پشتیبانی نمی‌کند');
+      }
+      
+      const detector = new BarcodeDetector();
+      const barcodes = await detector.detect(img);
+      
+      // Clean up
+      URL.revokeObjectURL(imageUrl);
+      
+      if (barcodes && barcodes.length > 0) {
+        const barcode = barcodes[0];
+        const rawValue = barcode.rawValue;
+        
+        if (rawValue) {
+          Utils.vibrate(100);
+          Utils.playBeep();
+          
+          Components.toastSuccess(`✅ بارکد پیدا شد: ${rawValue}`);
+          
+          // Restore camera view briefly then handle
+          container.innerHTML = originalContent;
+          handleBarcodeScanned(rawValue);
+          return;
+        }
+      }
+      
+      // No barcode found
+      throw new Error('بارکدی در این عکس پیدا نشد');
+      
+    } catch (err) {
+      console.error('Gallery scan error:', err);
+      
+      // Show error with retry option
+      container.innerHTML = `
+        <div class="camera-error">
+          <div class="camera-error-icon">⚠️</div>
+          <div class="camera-error-text">${Utils.escapeHtml(err.message)}</div>
+          <div class="camera-error-buttons">
+            <button id="btn-retry-gallery" class="btn btn-primary">تلاش مجدد</button>
+            <button id="btn-back-to-camera" class="btn btn-secondary">بازگشت به دوربین</button>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('btn-retry-gallery').addEventListener('click', () => {
+        document.getElementById('gallery-input').click();
+      });
+      
+      document.getElementById('btn-back-to-camera').addEventListener('click', () => {
+        container.innerHTML = `
+          <div class="camera-placeholder">
+            <div class="camera-placeholder-icon">📷</div>
+            <div class="camera-placeholder-text">در حال آماده‌سازی دوربین...</div>
+          </div>
+        `;
+        startScanning();
+      });
+    }
+  }
+  
+  // ============================================
+  // Barcode Handling
+  // ============================================
   
   function handleBarcodeScanned(barcode) {
     const normalized = Utils.normalizeBarcode(barcode);
@@ -164,7 +281,6 @@ Views.Scan = (function() {
     
     continueBtn.addEventListener('click', () => {
       modal.close();
-      // Restart camera and scanning
       const container = document.getElementById('camera-container');
       if (container) {
         container.innerHTML = `
@@ -177,6 +293,10 @@ Views.Scan = (function() {
       }
     });
   }
+  
+  // ============================================
+  // Manual Entry
+  // ============================================
   
   function showManualEntry() {
     stopScanning();
